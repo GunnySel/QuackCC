@@ -1,0 +1,8 @@
+{
+  "C_Cpp.intelliSenseEngine": "disabled", // disables MS C++ engine
+  "clangd.arguments": [
+    "--compile-commands-dir=."
+  ],
+  "clangd.path": "/usr/bin/clangd", // or whatever `which clangd` shows
+  "terminal.external.linuxExec": "gnome-terminal"
+}

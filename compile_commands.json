@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-std=c++17",
+      "-Wall",
+      "-g",
+      "-I./src/_include",
+      "-c",
+      "-o",
+      "build/core/main.o",
+      "src/core/main.cpp"
+    ],
+    "directory": "/home/itaymadeit/QuackCC-project/QuackCC",
+    "file": "/home/itaymadeit/QuackCC-project/QuackCC/src/core/main.cpp",
+    "output": "/home/itaymadeit/QuackCC-project/QuackCC/build/core/main.o"
+  }
+]

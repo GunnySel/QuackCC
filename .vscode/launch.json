@@ -1,0 +1,39 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run QuackCC",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/quackcc",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true,
+      "MIMode": "gdb",
+      "preLaunchTask": "Build with Make",
+      "setupCommands": [
+        {
+          "description": "Disable breakpoints",
+          "text": "set breakpoint pending off",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Debug QuackCC",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/quackcc",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": true,
+      "MIMode": "gdb",
+      "miDebuggerPath": "${workspaceFolder}/scripts/launch-gdb.sh",
+      "preLaunchTask": "Build with Make"
+    }
+  ]
+}
