@@ -1,10 +1,6 @@
-#include <iostream>
-#include <example.h>
+#include "lexer.hpp"
 
-int main()
-{
-    std::cout << printString  << std::endl;
-
-    return 0;
+int main() {
+    Lexer lexer("../examples/template.qc");
+    lexer.applyLexer(); 
 }
-//

@@ -1,4 +1,11 @@
 #include <string>
+
+struct FilePosition
+{
+    unsigned long line;
+    unsigned long column;
+};
+
 enum class TokenType : unsigned long
 {
     Invalid=0,
@@ -131,6 +138,5 @@ struct Token {
     TokenType type;
     std::string name;
 
-    unsigned long line;
-    unsigned long column;
+    FilePosition position;
 };
