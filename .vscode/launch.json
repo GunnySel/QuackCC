@@ -18,6 +18,11 @@
           "description": "Disable breakpoints",
           "text": "set breakpoint pending off",
           "ignoreFailures": true
+        },
+        {
+            "description": "Enable GDB pretty-printing",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
         }
       ]
     },
@@ -33,7 +38,14 @@
       "externalConsole": true,
       "MIMode": "gdb",
       "miDebuggerPath": "${workspaceFolder}/scripts/launch-gdb.sh",
-      "preLaunchTask": "Build with Make"
+      "preLaunchTask": "Build with Make",
+      "setupCommands": [
+        {
+            "description": "Enable GDB pretty-printing",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+        }
+      ]
     }
-  ]
+  ],
 }

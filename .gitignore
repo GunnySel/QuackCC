@@ -1,6 +1,9 @@
 # vscode
 .cache/
 
+# build
+build/
+
 # Prerequisites
 *.d
 
