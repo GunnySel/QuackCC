@@ -46,7 +46,7 @@ void Lexer::getFileContent(const std::string& filename)
     
 }
 
-unsigned long Lexer::getNextSpace(unsigned long index)
+unsigned long Lexer::findSpace(unsigned long index)
 {
     int spaceIndex = index;
     while(spaceIndex < m_fileContent.size() && !(std::isspace(m_fileContent[spaceIndex])))
@@ -54,12 +54,28 @@ unsigned long Lexer::getNextSpace(unsigned long index)
         spaceIndex++;
     }
 
-    if(spaceIndex == m_fileContent.size() -1)
+    if(spaceIndex == m_fileContent.size())
     {
         return -1;
     }
 
     return spaceIndex;
+}
+
+unsigned long Lexer::findNonSpace(unsigned long index)
+{
+    int tokenIndex = index;
+    while(tokenIndex < m_fileContent.size() && (std::isspace(m_fileContent[tokenIndex])))
+    {
+        tokenIndex++;
+    }
+
+    if(tokenIndex == m_fileContent.size())
+    {
+        return -1;
+    }
+
+    return tokenIndex;
 }
 
 Token Lexer::getCurToken()
@@ -241,21 +257,4 @@ bool Lexer::isOperatorChar(const char value)
 bool Lexer::isPunctuationChar(const char value)
 {
     return s_punctuationChars.find(value) != s_punctuationChars.end();
-}
-
-Lexer::Lexer(const std::string& file)
-{
-    if (s_initialized == false)
-    {
-        initKeywords();
-        initOperators();
-        initPunctuation();
-
-        s_initialized = true;
-    }
-
-    getFileContent(file);
-    m_curPos.column = 1;   
-    m_curPos.line = 1;   
-}
 }
