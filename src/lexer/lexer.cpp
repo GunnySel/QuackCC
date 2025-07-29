@@ -46,6 +46,30 @@ void Lexer::getFileContent(const std::string& filename)
     
 }
 
+
+void Lexer::moveCursor(unsigned long toPos)
+{
+    if (toPos >= m_fileContent.size())
+    {
+        throw std::runtime_error("toPos in moveCursor cannot be reached.");
+    }
+
+    while (m_curIndex < toPos)
+    {
+        if (m_fileContent[m_curIndex] == '\n')
+        {
+            m_curPos.column = 1;
+            m_curPos.line++;
+        }
+        else 
+        {
+            m_curPos.column++;
+        }
+
+        m_curIndex++; 
+    }
+}
+
 unsigned long Lexer::findSpace(unsigned long index)
 {
     int spaceIndex = index;

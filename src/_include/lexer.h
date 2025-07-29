@@ -17,6 +17,9 @@ public:
 private:
     void getFileContent(const std::string& file);
 
+    void moveCursor(unsigned long toPos);
+    
+    unsigned long getNextSpace(unsigned long index);
     unsigned long findSpace(unsigned long index);
     unsigned long findNonSpace(unsigned long index);
 
@@ -48,3 +51,4 @@ private:
     static std::unordered_set<char> s_punctuationChars;
 
 };
+
