@@ -2,6 +2,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "token.h"
@@ -32,12 +33,17 @@ private:
 
     static inline bool isKeyword(const std::string& value);
     static inline bool isOperator(const std::string& value);
+    static inline bool isOperatorChar(const char value);
     static inline bool isPunctuation(const std::string& value);
+    static inline bool isPunctuationChar(const char value);
 private:
     static bool s_initialized;
     
     static std::unordered_map<std::string, TokenType> s_keywords;
     static std::unordered_map<std::string, TokenType> s_operator;
     static std::unordered_map<std::string, TokenType> s_punctuation;
+    
+    static std::unordered_set<char> s_operatorChars;
+    static std::unordered_set<char> s_punctuationChars;
 
 };
