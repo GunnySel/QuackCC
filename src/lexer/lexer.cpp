@@ -1,11 +1,15 @@
 #include "lexer.h"
 #include <cctype>
 #include <stdexcept>
+#include <unordered_set>
 
 bool Lexer::s_initialized = false;
 std::unordered_map<std::string, TokenType> Lexer::s_keywords = {};
 std::unordered_map<std::string, TokenType> Lexer::s_operator = {};
 std::unordered_map<std::string, TokenType> Lexer::s_punctuation = {};
+std::unordered_set<char> Lexer::s_operatorChars = {};
+std::unordered_set<char> Lexer::s_punctuationChars = {};
+
 
 // isdigit, isalpha, '_'
 void Lexer::getFileContent(const std::string& filename)
@@ -21,7 +25,7 @@ unsigned long Lexer::getNextSpace(unsigned long index)
 Token Lexer::getCurToken()
 {
     return {
-        TokenType::Invalid, 
+        TokenType::EndOfFile, 
         "", 
         {
             m_curPos.line, 
@@ -49,6 +53,7 @@ std::vector<Token> Lexer::applyLexer()
 
         if (token.type == TokenType::EndOfFile)
         {
+            tokens.push_back(token);
             break;
         }
 
@@ -152,6 +157,14 @@ void Lexer::initOperators()
     s_operator["--"] = TokenType::OperatorDecrement;
 
     s_operator["?"]  = TokenType::OperatorTernary;
+
+    for (const auto& [op, _] : s_operator) 
+    {
+        for (char c : op)
+        {
+            s_operatorChars.insert(c);
+        }
+    }
 }
 
 void Lexer::initPunctuation()
@@ -170,8 +183,25 @@ void Lexer::initPunctuation()
     s_punctuation["."]   = TokenType::PunctuationDot;
     s_punctuation["..."] = TokenType::Punctuation3Dots;
     s_punctuation["->"]  = TokenType::PunctuationArrow;
+
+    for (const auto& [op, _] : s_punctuation) 
+    {
+        for (char c : op)
+        {
+            s_punctuationChars.insert(c);
+        }
+    }
 }
 
+bool Lexer::isOperatorChar(const char value)
+{
+    return s_operatorChars.find(value) != s_operatorChars.end();
+}
+
+bool Lexer::isPunctuationChar(const char value)
+{
+    return s_punctuationChars.find(value) != s_punctuationChars.end();
+}
 
 Lexer::Lexer(const std::string& file)
 {
