@@ -1,21 +1,61 @@
 #include "lexer.h"
 #include <cctype>
+#include <fstream>
 #include <stdexcept>
+#include <sstream>
+#include <string>
 
 bool Lexer::s_initialized = false;
 std::unordered_map<std::string, TokenType> Lexer::s_keywords = {};
 std::unordered_map<std::string, TokenType> Lexer::s_operator = {};
 std::unordered_map<std::string, TokenType> Lexer::s_punctuation = {};
 
+Lexer::Lexer(const std::string& file)
+{
+    if (s_initialized == false)
+    {
+        initKeywords();
+        initOperators();
+        initPunctuation();
+
+        s_initialized = true;
+    }
+
+    getFileContent(file);
+    m_curPos.column = 1;   
+    m_curPos.line = 1;   
+}
+
 // isdigit, isalpha, '_'
 void Lexer::getFileContent(const std::string& filename)
 {
+    std::ifstream file(filename);
+    
+    if (!file.is_open()) 
+    {
+        throw std::runtime_error("Could not open file: " + filename);
+    }
+
+    std::ostringstream contentStream;
+    contentStream << file.rdbuf(); 
+    m_fileContent = contentStream.str();
     
 }
 
 unsigned long Lexer::getNextSpace(unsigned long index)
 {
-    return 0;
+    int spaceIndex = index;
+    while(spaceIndex < m_fileContent.size() && !(std::isspace(m_fileContent[spaceIndex])))
+    {
+        spaceIndex++;
+    }
+
+    if(spaceIndex == m_fileContent.size() -1)
+    {
+        return -1;
+    }
+
+    return spaceIndex;
 }
 
 Token Lexer::getCurToken()
@@ -170,21 +210,4 @@ void Lexer::initPunctuation()
     s_punctuation["."]   = TokenType::PunctuationDot;
     s_punctuation["..."] = TokenType::Punctuation3Dots;
     s_punctuation["->"]  = TokenType::PunctuationArrow;
-}
-
-
-Lexer::Lexer(const std::string& file)
-{
-    if (s_initialized == false)
-    {
-        initKeywords();
-        initOperators();
-        initPunctuation();
-
-        s_initialized = true;
-    }
-
-    getFileContent(file);
-    m_curPos.column = 1;   
-    m_curPos.line = 1;   
 }
