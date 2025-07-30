@@ -46,7 +46,6 @@ void Lexer::getFileContent(const std::string& filename)
     
 }
 
-
 void Lexer::moveCursor(unsigned long toPos)
 {
     if (toPos >= m_fileContent.size())
@@ -54,21 +53,55 @@ void Lexer::moveCursor(unsigned long toPos)
         throw std::runtime_error("toPos in moveCursor cannot be reached.");
     }
 
-    while (m_curIndex < toPos)
+    // Move forward
+    if (m_curIndex < toPos)
     {
-        if (m_fileContent[m_curIndex] == '\n')
+        while (m_curIndex < toPos)
         {
-            m_curPos.column = 1;
-            m_curPos.line++;
+            if (m_fileContent[m_curIndex] == '\n')
+            {
+                m_curPos.column = 1;
+                m_curPos.line++;
+            }
+            else
+            {
+                m_curPos.column++;
+            }
+            m_curIndex++;
         }
-        else 
+    }
+    // Move backward
+    else if (m_curIndex > toPos)
+    {
+        while (m_curIndex > toPos)
         {
-            m_curPos.column++;
-        }
+            m_curIndex--;
+            if (m_fileContent[m_curIndex] == '\n')
+            {
+                // Recalculate column when crossing a newline
+                m_curPos.line--;
+                m_curPos.column = 1;
 
-        m_curIndex++; 
+                // Count the columns from the previous line start
+                size_t tempIndex = m_curIndex - 1;
+                while (tempIndex > 0 && m_fileContent[tempIndex] != '\n')
+                {
+                    m_curPos.column++;
+                    tempIndex--;
+                }
+            }
+            else
+            {
+                m_curPos.column--;
+                if (m_curPos.column < 1) 
+                {
+                    m_curPos.column = 1;
+                }
+            }
+        }
     }
 }
+
 
 unsigned long Lexer::findSpace(unsigned long index)
 {
@@ -102,10 +135,96 @@ unsigned long Lexer::findNonSpace(unsigned long index)
     return tokenIndex;
 }
 
-Token Lexer::getCurToken()
+Token Lexer::handleNumericLiteral()
 {
     return {
-        TokenType::EndOfFile, 
+        TokenType::Invalid, 
+        "", 
+        {
+            m_curPos.line, 
+            m_curPos.column
+        }
+    };
+}
+
+Token Lexer::handleIdentifier()
+{
+    return {
+        TokenType::Invalid, 
+        "", 
+        {
+            m_curPos.line, 
+            m_curPos.column
+        }
+    };
+    
+}
+
+Token Lexer::handlePunctuation()
+{
+    return {
+        TokenType::Invalid, 
+        "", 
+        {
+            m_curPos.line, 
+            m_curPos.column
+        }
+    };
+    
+}
+
+Token Lexer::handleOperator()
+{
+    return {
+        TokenType::Invalid, 
+        "", 
+        {
+            m_curPos.line, 
+            m_curPos.column
+        }
+    };
+    
+}
+
+Token Lexer::getCurToken()
+{
+    unsigned long fromIndex = findNonSpace(m_curIndex);
+
+    if (fromIndex == m_fileContent.size())
+    {
+        return {
+            .type=TokenType::EndOfFile, 
+            .name="", 
+            .position{
+                .line=m_curPos.line, 
+                .column=m_curPos.column
+            }
+        };
+    }
+
+    moveCursor(fromIndex);
+
+    char ch = m_fileContent[m_curIndex];
+
+    if (std::isdigit(ch))
+    {
+        return handleNumericLiteral();
+    }
+    if (std::isalpha(ch) || ch == '_')
+    {
+        return handleIdentifier();
+    }
+    if (isPunctuationChar(ch))
+    {
+        return handlePunctuation();
+    }
+    if (isOperatorChar(ch))
+    {
+        return handleOperator();
+    }
+    
+    return {
+        TokenType::Invalid, 
         "", 
         {
             m_curPos.line, 

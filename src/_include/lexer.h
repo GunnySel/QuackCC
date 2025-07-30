@@ -23,6 +23,11 @@ private:
     unsigned long findSpace(unsigned long index);
     unsigned long findNonSpace(unsigned long index);
 
+    Token handleNumericLiteral();
+    Token handleIdentifier();
+    Token handlePunctuation();
+    Token handleOperator();
+
     Token getCurToken();
 
 private:
