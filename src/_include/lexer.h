@@ -25,9 +25,9 @@ private:
 
     Token handleNumericLiteral();
     Token handleStringLiteral();
+    Token handleCharLiteral();
     Token handleIdentifier();
-    Token handlePunctuation();
-    Token handleOperator();
+    Token handleOperatorNPunctuation();
 
     Token getCurToken();
 

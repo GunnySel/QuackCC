@@ -133,7 +133,7 @@ unsigned long Lexer::findNonSpace(unsigned long index)
 
     if(tokenIndex == m_fileContent.size())
     {
-        return -1;
+        return m_fileContent.size();
     }
 
     return tokenIndex;
@@ -207,15 +207,33 @@ Token Lexer::handleNumericLiteral()
         };
     }
 
-    FilePosition tokenPos = m_lastPos;
+    if (isBin && std::isxdigit(m_fileContent[m_curIndex]))
+    {
+        return {
+            TokenType::Invalid,
+            "",
+            m_lastPos
+        };
+    }
 
-    moveCursor(m_curIndex);
 
-    return {
+    // 123A or 0b0101A is not allowed
+    if (!isHex && std::isxdigit(m_fileContent[m_curIndex]))
+    {
+        return {
+            TokenType::Invalid,
+            "",
+            m_lastPos
+        };
+    }
+
+    Token result = Token{
         TokenType::LiteralInteger,
         numberStr,
-        tokenPos
+        m_lastPos
     };
+
+    return result;
 }
 
 Token Lexer::handleStringLiteral()
@@ -230,7 +248,7 @@ Token Lexer::handleStringLiteral()
         };
     }
 
-    std::string stringContent;
+    std::string stringContent = "";
     m_curIndex++; 
 
     bool closed = false;
@@ -280,7 +298,7 @@ Token Lexer::handleStringLiteral()
             }
             else if (nextChar == '"') 
             {
-                stringContent += '"';
+                stringContent += '\"';
             }
             else if (nextChar == '\'') 
             {
@@ -318,54 +336,185 @@ Token Lexer::handleStringLiteral()
         };
     }
 
-    return {
+    Token result = Token{
         TokenType::LiteralString,
         stringContent,
         m_lastPos
     };
-    
+
+    return result;
 }
 
+Token Lexer::handleCharLiteral()
+{
+    char c = m_fileContent[m_curIndex];
+    std::string charContent="";
+
+    if (c == '\\')
+    {
+        if (m_curIndex + 1 >= m_fileContent.size())
+        {
+            return {
+                TokenType::Invalid,
+                "",
+                m_lastPos
+            };
+        }
+
+        char nextChar = m_fileContent[m_curIndex + 1];
+        if (nextChar == 'n') 
+        {
+            charContent += '\n';
+        }
+        else if (nextChar == 't')
+        {
+            charContent += '\t';
+        }
+        else if (nextChar == 'r')
+        {
+            charContent += '\r';
+        }
+        else if (nextChar == 'v')
+        {
+            charContent += '\v';
+        }
+        else if (nextChar == 'b')
+        {
+            charContent += '\b';
+        }
+        else if (nextChar == '"') 
+        {
+            charContent += '\"';
+        }
+        else if (nextChar == '\'') 
+        {
+            charContent += '\'';
+        }
+        else if (nextChar == '\\') 
+        {
+            charContent += '\\';
+        }
+        else
+        {
+            return {
+                TokenType::Invalid,
+                "",
+                m_lastPos
+            };            
+        }
+
+        m_curIndex += 2;
+    }
+    else
+    {
+        if (c == '\'')
+        {
+            return {
+                TokenType::Invalid,
+                "",
+                m_lastPos
+            };           
+        }
+
+        charContent += c;
+        m_curIndex++;
+    }
+
+    if (m_curIndex != '\'')
+    {
+        return {
+            TokenType::Invalid,
+            "",
+            m_lastPos
+        };           
+    }
+
+    Token result = Token {
+        TokenType::LiteralChar,
+        std::move(charContent),
+        m_lastPos
+    };      
+
+    return result;    
+}
 Token Lexer::handleIdentifier()
 {
-    return {
-        TokenType::Invalid, 
-        "", 
-        m_lastPos
-    };
-    
+    while (m_curIndex < m_fileContent.size())
+    {
+        if (std::isdigit(m_fileContent[m_curIndex]) ||
+                std::isalpha(m_fileContent[m_curIndex]) ||
+                m_fileContent[m_curIndex] == '_')
+        {
+            m_curIndex++;
+
+            continue;
+        }
+
+        break;
+    }
+
+    std::string result = m_fileContent.substr(m_lastIndex, m_curIndex-m_lastIndex);
+
+    auto it = s_keywords.find(result);
+
+    if (it == s_keywords.end())
+    {            
+        return Token{
+            .type=TokenType::Identifier,
+            .name=std::move(result),
+            .position=m_lastPos
+        };
+    }
+    else 
+    {
+        return Token{
+            .type=s_keywords[result],
+            .name="",
+            .position=m_lastPos
+        };
+    }
 }
 
-Token Lexer::handlePunctuation()
+Token Lexer::handleOperatorNPunctuation()
 {
-    // Iterate characters until not punctuation anymore
-    while (m_curIndex < m_fileContent.size() && isPunctuationChar(m_fileContent[m_curIndex]))
+    // Iterate characters until not operator or punctuation anymore
+    while (m_curIndex < m_fileContent.size() && 
+        (isOperatorChar(m_fileContent[m_curIndex] ) || isPunctuationChar(m_fileContent[m_curIndex])))
     {
         m_curIndex++;
     }
-    
-    // Get the candidate for the punctuation
-    std::string puncCandidate = m_fileContent.substr(m_lastIndex, m_curIndex - m_lastIndex);
+
+    // Get the candidate 
+    std::string candidate = m_fileContent.substr(m_lastIndex, m_curIndex - m_lastIndex);
 
     // Iterate until m_curIndex == m_lastIndex
     while (m_curIndex > m_lastIndex)
     {
         // Check if the candidate is the result
-        if (isPunctuation(puncCandidate))
+        if (isOperator(candidate))
         {
-            moveCursor(m_curIndex);
+            Token value = Token{
+                .type = s_operator[candidate],
+                .name="",
+                .position=m_lastPos
+            };
 
-            Token value;
-            value.type = s_operator[puncCandidate];
-            value.name = "";
-            value.position = m_lastPos;
+            return value;
+        }
+        else if (isPunctuation(candidate))
+        {
+            Token value = Token{
+                .type = s_punctuation[candidate],
+                .name="",
+                .position=m_lastPos
+            };
 
             return value;
         }
 
         // Goes back by one
         m_curIndex--;
-        puncCandidate.resize(puncCandidate.size()-1);
+        candidate.resize(candidate.size()-1);
     }
 
     m_curIndex = m_lastIndex;
@@ -374,49 +523,7 @@ Token Lexer::handlePunctuation()
     return {
         .type=TokenType::Invalid,
         .name="",
-        .position={.line=m_lastPos.line, .column=m_lastPos.column}
-    };
-}
-
-Token Lexer::handleOperator()
-{
-    // Iterate characters until not operator anymore
-    while (m_curIndex < m_fileContent.size() && isOperatorChar(m_fileContent[m_curIndex]))
-    {
-        m_curIndex++;
-    }
-
-    // Get the candidate for the operator
-    std::string opCandidate = m_fileContent.substr(m_lastIndex, m_curIndex - m_lastIndex);
-
-    // Iterate until m_curIndex == m_lastIndex
-    while (m_curIndex > m_lastIndex)
-    {
-        // Check if the candidate is the result
-        if (isOperator(opCandidate))
-        {
-            moveCursor(m_curIndex);
-
-            Token value;
-            value.type = s_operator[opCandidate];
-            value.name = "";
-            value.position = m_lastPos;
-
-            return value;
-        }
-
-        // Goes back by one
-        m_curIndex--;
-        opCandidate.resize(opCandidate.size()-1);
-    }
-
-    m_curIndex = m_lastIndex;
-
-    // No valid operator
-    return {
-        .type=TokenType::Invalid,
-        .name="",
-        .position={.line=m_lastPos.line, .column=m_lastPos.column}
+        .position=m_lastPos
     };
 }
 
@@ -449,17 +556,17 @@ Token Lexer::getCurToken()
     {
         return handleStringLiteral();
     }
+    if (ch == '\'')
+    {
+        return handleCharLiteral();
+    }
     if (std::isalpha(ch) || ch == '_')
     {
         return handleIdentifier();
     }
-    if (isPunctuationChar(ch))
+    if (isOperatorChar(ch) || isPunctuationChar(ch))
     {
-        return handlePunctuation();
-    }
-    if (isOperatorChar(ch))
-    {
-        return handleOperator();
+        return handleOperatorNPunctuation();
     }
     
     return {
@@ -489,13 +596,14 @@ std::vector<Token> Lexer::applyLexer()
             );
         }
 
-        if (token.type == TokenType::EndOfFile)
+        tokens.push_back(token);
+
+        if (m_curIndex == m_fileContent.size())
         {
-            tokens.push_back(token);
-            break;
+            return tokens;
         }
 
-        tokens.push_back(token);
+        moveCursor(m_curIndex);
     }
 
     return tokens;
@@ -558,6 +666,7 @@ void Lexer::initOperators()
 
     s_operator["*"]  = TokenType::OperatorAsterik;
     s_operator["&"]  = TokenType::OperatorAmpersand;
+    s_operator["->"] = TokenType::OperatorArrow;
 
     s_operator["+"]  = TokenType::OperatorArithmeticAdd;
     s_operator["-"]  = TokenType::OperatorArithmeticSub;
@@ -620,7 +729,6 @@ void Lexer::initPunctuation()
     s_punctuation["::"]  = TokenType::PunctuationDoubleColon;
     s_punctuation["."]   = TokenType::PunctuationDot;
     s_punctuation["..."] = TokenType::Punctuation3Dots;
-    s_punctuation["->"]  = TokenType::PunctuationArrow;
 
     for (const auto& [op, _] : s_punctuation) 
     {

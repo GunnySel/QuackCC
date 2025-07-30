@@ -50,6 +50,7 @@ std::string tokenTypeToString(TokenType type) {
         {TokenType::OperatorRightArrow, "Operator>"},
         {TokenType::OperatorAsterik, "Operator*"},
         {TokenType::OperatorAmpersand, "Operator&"},
+        {TokenType::OperatorArrow, "Operator->"},
         {TokenType::OperatorArithmeticAdd, "Operator+"},
         {TokenType::OperatorArithmeticSub, "Operator-"},
         {TokenType::OperatorArithmeticDiv, "Operator/"},
@@ -94,7 +95,6 @@ std::string tokenTypeToString(TokenType type) {
         {TokenType::PunctuationDoubleColon, "Punctuation::"},
         {TokenType::PunctuationDot, "Punctuation."},
         {TokenType::Punctuation3Dots, "Punctuation..."},
-        {TokenType::PunctuationArrow, "Punctuation->"},
 
         {TokenType::EndOfFile, "EndOfFile"}
     };
@@ -112,7 +112,7 @@ std::string tokenToString(const Token& token) {
 
 int main() 
 {
-    Lexer lexer("../examples/template.qc");
+    Lexer lexer("examples/template.qc");
     std::vector<Token> resultTokens = lexer.applyLexer(); 
     for (const Token& token : resultTokens)
     {

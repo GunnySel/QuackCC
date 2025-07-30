@@ -67,6 +67,7 @@ enum class TokenType : unsigned long
     // Pointers/Arithemtic/Logical
     OperatorAsterik, // *
     OperatorAmpersand, // &
+    OperatorArrow, // ->
 
     // Arithmetic (+,- etc)
     OperatorArithmeticAdd,
@@ -126,7 +127,6 @@ enum class TokenType : unsigned long
     PunctuationDoubleColon, // used for enum EnumClass::EnumValue
     PunctuationDot, // .
     Punctuation3Dots, // ...
-    PunctuationArrow, // ->
 
     PunctuationEnd,
 
