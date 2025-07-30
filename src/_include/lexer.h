@@ -32,8 +32,9 @@ private:
 
 private:
     std::string m_fileContent;
-    FilePosition m_curPos; 
+    FilePosition m_lastPos; 
     unsigned long m_curIndex;
+    unsigned long m_lastIndex;
 
 private:
     static void initKeywords();

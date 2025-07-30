@@ -26,8 +26,12 @@ Lexer::Lexer(const std::string& file)
     }
 
     getFileContent(file);
-    m_curPos.column = 1;   
-    m_curPos.line = 1;   
+
+    m_lastPos.column = 1;   
+    m_lastPos.line = 1;   
+
+    m_lastIndex = 0;
+    m_curIndex = 0;
 }
 
 // isdigit, isalpha, '_'
@@ -54,48 +58,48 @@ void Lexer::moveCursor(unsigned long toPos)
     }
 
     // Move forward
-    if (m_curIndex < toPos)
+    if (m_lastIndex < toPos)
     {
-        while (m_curIndex < toPos)
+        while (m_lastIndex < toPos)
         {
-            if (m_fileContent[m_curIndex] == '\n')
+            if (m_fileContent[m_lastIndex] == '\n')
             {
-                m_curPos.column = 1;
-                m_curPos.line++;
+                m_lastPos.column = 1;
+                m_lastPos.line++;
             }
             else
             {
-                m_curPos.column++;
+                m_lastPos.column++;
             }
-            m_curIndex++;
+            m_lastIndex++;
         }
     }
     // Move backward
-    else if (m_curIndex > toPos)
+    else if (m_lastIndex > toPos)
     {
-        while (m_curIndex > toPos)
+        while (m_lastIndex > toPos)
         {
-            m_curIndex--;
-            if (m_fileContent[m_curIndex] == '\n')
+            m_lastIndex--;
+            if (m_fileContent[m_lastIndex] == '\n')
             {
                 // Recalculate column when crossing a newline
-                m_curPos.line--;
-                m_curPos.column = 1;
+                m_lastPos.line--;
+                m_lastPos.column = 1;
 
                 // Count the columns from the previous line start
-                size_t tempIndex = m_curIndex - 1;
+                size_t tempIndex = m_lastIndex - 1;
                 while (tempIndex > 0 && m_fileContent[tempIndex] != '\n')
                 {
-                    m_curPos.column++;
+                    m_lastPos.column++;
                     tempIndex--;
                 }
             }
             else
             {
-                m_curPos.column--;
-                if (m_curPos.column < 1) 
+                m_lastPos.column--;
+                if (m_lastPos.column < 1) 
                 {
-                    m_curPos.column = 1;
+                    m_lastPos.column = 1;
                 }
             }
         }
@@ -221,8 +225,8 @@ Token Lexer::handleIdentifier()
         TokenType::Invalid, 
         "", 
         {
-            m_curPos.line, 
-            m_curPos.column
+            m_lastPos.line, 
+            m_lastPos.column
         }
     };
     
@@ -230,28 +234,86 @@ Token Lexer::handleIdentifier()
 
 Token Lexer::handlePunctuation()
 {
-    return {
-        TokenType::Invalid, 
-        "", 
-        {
-            m_curPos.line, 
-            m_curPos.column
-        }
-    };
+    // Iterate characters until not punctuation anymore
+    while (m_curIndex < m_fileContent.size() && isPunctuationChar(m_fileContent[m_curIndex]))
+    {
+        m_curIndex++;
+    }
     
+    // Get the candidate for the punctuation
+    std::string puncCandidate = m_fileContent.substr(m_lastIndex, m_curIndex - m_lastIndex);
+
+    // Iterate until m_curIndex == m_lastIndex
+    while (m_curIndex > m_lastIndex)
+    {
+        // Check if the candidate is the result
+        if (isPunctuation(puncCandidate))
+        {
+            moveCursor(m_curIndex);
+
+            Token value;
+            value.type = s_operator[puncCandidate];
+            value.name = "";
+            value.position = m_lastPos;
+
+            return value;
+        }
+
+        // Goes back by one
+        m_curIndex--;
+        puncCandidate.resize(puncCandidate.size()-1);
+    }
+
+    m_curIndex = m_lastIndex;
+
+    // No valid operator
+    return {
+        .type=TokenType::Invalid,
+        .name="",
+        .position={.line=m_lastPos.line, .column=m_lastPos.column}
+    };
 }
 
 Token Lexer::handleOperator()
 {
-    return {
-        TokenType::Invalid, 
-        "", 
+    // Iterate characters until not operator anymore
+    while (m_curIndex < m_fileContent.size() && isOperatorChar(m_fileContent[m_curIndex]))
+    {
+        m_curIndex++;
+    }
+
+    // Get the candidate for the operator
+    std::string opCandidate = m_fileContent.substr(m_lastIndex, m_curIndex - m_lastIndex);
+
+    // Iterate until m_curIndex == m_lastIndex
+    while (m_curIndex > m_lastIndex)
+    {
+        // Check if the candidate is the result
+        if (isOperator(opCandidate))
         {
-            m_curPos.line, 
-            m_curPos.column
+            moveCursor(m_curIndex);
+
+            Token value;
+            value.type = s_operator[opCandidate];
+            value.name = "";
+            value.position = m_lastPos;
+
+            return value;
         }
+
+        // Goes back by one
+        m_curIndex--;
+        opCandidate.resize(opCandidate.size()-1);
+    }
+
+    m_curIndex = m_lastIndex;
+
+    // No valid operator
+    return {
+        .type=TokenType::Invalid,
+        .name="",
+        .position={.line=m_lastPos.line, .column=m_lastPos.column}
     };
-    
 }
 
 Token Lexer::getCurToken()
@@ -264,14 +326,15 @@ Token Lexer::getCurToken()
             .type=TokenType::EndOfFile, 
             .name="", 
             .position{
-                .line=m_curPos.line, 
-                .column=m_curPos.column
+                .line=m_lastPos.line, 
+                .column=m_lastPos.column
             }
         };
     }
 
     moveCursor(fromIndex);
-
+    
+    m_curIndex = m_lastIndex;
     char ch = m_fileContent[m_curIndex];
 
     if (std::isdigit(ch))
@@ -295,8 +358,8 @@ Token Lexer::getCurToken()
         TokenType::Invalid, 
         "", 
         {
-            m_curPos.line, 
-            m_curPos.column
+            m_lastPos.line, 
+            m_lastPos.column
         }
     };
 }
