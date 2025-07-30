@@ -141,8 +141,6 @@ unsigned long Lexer::findNonSpace(unsigned long index)
 
 Token Lexer::handleNumericLiteral()
 {
-    FilePosition tokenPos = m_curPos;
-
     bool isHex = false;
     bool isBin = false;
     std::string numberStr;
@@ -154,7 +152,6 @@ Token Lexer::handleNumericLiteral()
         isHex = true;
         numberStr = "0x";
         m_curIndex += 2;
-        m_curPos.column += 2;
     }
 
     else if (m_fileContent[m_curIndex] == '0' &&
@@ -164,7 +161,6 @@ Token Lexer::handleNumericLiteral()
         isBin = true;
         numberStr = "0b";
         m_curIndex += 2;
-        m_curPos.column += 2;
     }
 
     std::string digitPartOnly;
@@ -199,7 +195,6 @@ Token Lexer::handleNumericLiteral()
         numberStr += c;
         digitPartOnly += c;
         m_curIndex++;
-        m_curPos.column++;
     }
 
     // Invalid if `0x` or `0b` not followed by digits
@@ -208,9 +203,13 @@ Token Lexer::handleNumericLiteral()
         return {
             TokenType::Invalid,
             "",
-            { tokenPos.line, tokenPos.column }
+            m_lastPos
         };
     }
+
+    FilePosition tokenPos = m_lastPos;
+
+    moveCursor(m_curIndex);
 
     return {
         TokenType::LiteralInteger,
@@ -219,15 +218,17 @@ Token Lexer::handleNumericLiteral()
     };
 }
 
+Token Lexer::handleStringLiteral()
+{
+    
+}
+
 Token Lexer::handleIdentifier()
 {
     return {
         TokenType::Invalid, 
         "", 
-        {
-            m_lastPos.line, 
-            m_lastPos.column
-        }
+        m_lastPos
     };
     
 }
@@ -340,6 +341,10 @@ Token Lexer::getCurToken()
     if (std::isdigit(ch))
     {
         return handleNumericLiteral();
+    }
+    if (ch == '\"')
+    {
+        return handleStringLiteral();
     }
     if (std::isalpha(ch) || ch == '_')
     {

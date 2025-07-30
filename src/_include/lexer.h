@@ -24,6 +24,7 @@ private:
     unsigned long findNonSpace(unsigned long index);
 
     Token handleNumericLiteral();
+    Token handleStringLiteral();
     Token handleIdentifier();
     Token handlePunctuation();
     Token handleOperator();
@@ -32,9 +33,10 @@ private:
 
 private:
     std::string m_fileContent;
+
     FilePosition m_lastPos; 
-    unsigned long m_curIndex;
     unsigned long m_lastIndex;
+    unsigned long m_curIndex;
 
 private:
     static void initKeywords();
