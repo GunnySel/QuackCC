@@ -220,6 +220,109 @@ Token Lexer::handleNumericLiteral()
 
 Token Lexer::handleStringLiteral()
 {
+
+    if (m_fileContent[m_curIndex] != '"')
+    {
+        return {
+            TokenType::Invalid,
+            "",
+            m_lastPos
+        };
+    }
+
+    std::string stringContent;
+    m_curIndex++; 
+
+    bool closed = false;
+
+    while (m_curIndex < m_fileContent.size())
+    {
+        char c = m_fileContent[m_curIndex];
+
+        if (c == '"')
+        {
+            closed = true;
+            m_curIndex++;
+            break;
+        }
+
+        if (c == '\\')
+        {
+            if (m_curIndex + 1 >= m_fileContent.size())
+            {
+                return {
+                    TokenType::Invalid,
+                    "",
+                    m_lastPos
+                };
+            }
+
+            char nextChar = m_fileContent[m_curIndex + 1];
+            if (nextChar == 'n') 
+            {
+                stringContent += '\n';
+            }
+            else if (nextChar == 't')
+            {
+                stringContent += '\t';
+            }
+            else if (nextChar == 'r')
+            {
+                stringContent += '\r';
+            }
+            else if (nextChar == 'v')
+            {
+                stringContent += '\v';
+            }
+            else if (nextChar == 'b')
+            {
+                stringContent += '\b';
+            }
+            else if (nextChar == '"') 
+            {
+                stringContent += '"';
+            }
+            else if (nextChar == '\'') 
+            {
+                stringContent += '\'';
+            }
+            else if (nextChar == '\\') 
+            {
+                stringContent += '\\';
+            }
+            else
+            {
+                return {
+                    TokenType::Invalid,
+                    "",
+                    m_lastPos
+                };            
+            }
+
+            m_curIndex += 2;
+        }
+        else
+        {
+
+            stringContent += c;
+            m_curIndex++;
+        }
+    }
+
+    if (!closed)
+    {
+        return {
+            TokenType::Invalid,
+            "",
+            m_lastPos
+        };
+    }
+
+    return {
+        TokenType::LiteralString,
+        stringContent,
+        m_lastPos
+    };
     
 }
 
