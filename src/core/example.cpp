@@ -110,7 +110,7 @@ std::string tokenToString(const Token& token) {
            ", column=" + std::to_string(token.position.column) + ")";
 }
 
-int main() 
+int main(int argc, char* argv[]) 
 {
     Lexer lexer("examples/template.qc");
     std::vector<Token> resultTokens = lexer.applyLexer(); 

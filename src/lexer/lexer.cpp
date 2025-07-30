@@ -347,6 +347,7 @@ Token Lexer::handleStringLiteral()
 
 Token Lexer::handleCharLiteral()
 {
+    m_curIndex++;
     char c = m_fileContent[m_curIndex];
     std::string charContent="";
 
@@ -420,7 +421,7 @@ Token Lexer::handleCharLiteral()
         m_curIndex++;
     }
 
-    if (m_curIndex != '\'')
+    if (m_fileContent[m_curIndex] != '\'')
     {
         return {
             TokenType::Invalid,
@@ -428,6 +429,8 @@ Token Lexer::handleCharLiteral()
             m_lastPos
         };           
     }
+
+    m_curIndex++;
 
     Token result = Token {
         TokenType::LiteralChar,
