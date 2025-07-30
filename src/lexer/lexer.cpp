@@ -137,13 +137,81 @@ unsigned long Lexer::findNonSpace(unsigned long index)
 
 Token Lexer::handleNumericLiteral()
 {
-    return {
-        TokenType::Invalid, 
-        "", 
+    FilePosition tokenPos = m_curPos;
+
+    bool isHex = false;
+    bool isBin = false;
+    std::string numberStr;
+
+    if (m_fileContent[m_curIndex] == '0' &&
+        (m_curIndex + 1 < m_fileContent.size()) &&
+        (m_fileContent[m_curIndex + 1] == 'x' || m_fileContent[m_curIndex + 1] == 'X'))
+    {
+        isHex = true;
+        numberStr = "0x";
+        m_curIndex += 2;
+        m_curPos.column += 2;
+    }
+
+    else if (m_fileContent[m_curIndex] == '0' &&
+             (m_curIndex + 1 < m_fileContent.size()) &&
+             (m_fileContent[m_curIndex + 1] == 'b' || m_fileContent[m_curIndex + 1] == 'B'))
+    {
+        isBin = true;
+        numberStr = "0b";
+        m_curIndex += 2;
+        m_curPos.column += 2;
+    }
+
+    std::string digitPartOnly;
+    while (m_curIndex < m_fileContent.size())
+    {
+        char c = m_fileContent[m_curIndex];
+
+        if (isHex)
         {
-            m_curPos.line, 
-            m_curPos.column
+            if (!std::isxdigit(static_cast<unsigned char>(c))) 
+            {
+                break;
+            }
         }
+
+        else if (isBin)
+        {
+            if (c != '0' && c != '1')
+            {
+                break;
+            } 
+        }
+        
+        else
+        {
+            if (!std::isdigit(static_cast<unsigned char>(c)))
+            {
+                break;
+            } 
+        }
+
+        numberStr += c;
+        digitPartOnly += c;
+        m_curIndex++;
+        m_curPos.column++;
+    }
+
+    // Invalid if `0x` or `0b` not followed by digits
+    if ((isHex || isBin) && digitPartOnly.empty())
+    {
+        return {
+            TokenType::Invalid,
+            "",
+            { tokenPos.line, tokenPos.column }
+        };
+    }
+
+    return {
+        TokenType::LiteralInteger,
+        numberStr,
+        tokenPos
     };
 }
 
