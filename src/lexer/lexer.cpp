@@ -641,6 +641,7 @@ void Lexer::initKeywords()
     s_keywords["case"] = TokenType::KeywordCase;
     s_keywords["switch"] = TokenType::KeywordSwitch;
     s_keywords["default"] = TokenType::KeywordDefault;
+    s_keywords["fallthrough"] = TokenType::KeywordFallthrough;
     s_keywords["typedef"] = TokenType::KeywordTypedef;
 
     s_keywords["class"] = TokenType::KeywordClass;
@@ -648,6 +649,7 @@ void Lexer::initKeywords()
     s_keywords["union"] = TokenType::KeywordUnion;
     s_keywords["enum"] = TokenType::KeywordEnum;
 
+    s_keywords["zero"] = TokenType::KeywordZero;
     s_keywords["void"] = TokenType::KeywordVoid;
     s_keywords["int"] = TokenType::KeywordInt;
     s_keywords["double"] = TokenType::KeywordDouble;
@@ -655,11 +657,17 @@ void Lexer::initKeywords()
     s_keywords["long"] = TokenType::KeywordLong;
     s_keywords["char"] = TokenType::KeywordChar;
     s_keywords["short"] = TokenType::KeywordShort;
+    s_keywords["funcptr"] = TokenType::KeywordFuncptr;
 
     s_keywords["const"] = TokenType::KeywordConst;
     s_keywords["unsigned"] = TokenType::KeywordUnsigned;
     s_keywords["signed"] = TokenType::KeywordSigned;
     s_keywords["extern"] = TokenType::KeywordExtern;
+
+    s_keywords["sizeof"] = TokenType::KeywordSizeof;
+    s_keywords["offsetof"] = TokenType::KeywordOffsetof;
+    s_keywords["packed"] = TokenType::KeywordPacked;
+    s_keywords["align"] = TokenType::KeywordAlign;
 }
 
 void Lexer::initOperators()

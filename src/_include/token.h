@@ -25,7 +25,8 @@ enum class TokenType : unsigned long
     KeywordDo,
     KeywordCase,
     KeywordSwitch,
-    KeywordDefault,
+    KeywordDefault,    
+    KeywordFallthrough,    
     KeywordTypedef,
 
     KeywordClass, 
@@ -33,6 +34,7 @@ enum class TokenType : unsigned long
     KeywordUnion, 
     KeywordEnum, 
     
+    KeywordZero,
     KeywordVoid, 
     KeywordInt, 
     KeywordDouble, 
@@ -40,11 +42,17 @@ enum class TokenType : unsigned long
     KeywordLong, 
     KeywordChar, 
     KeywordShort, 
+    KeywordFuncptr, 
     
     KeywordConst, 
     KeywordUnsigned, 
     KeywordSigned, 
     KeywordExtern, 
+
+    KeywordSizeof, 
+    KeywordOffsetof, 
+    KeywordPacked, 
+    KeywordAlign, 
 
     KeywordEnd,
 

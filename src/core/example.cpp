@@ -113,7 +113,9 @@ std::string tokenToString(const Token& token) {
 int main(int argc, char* argv[]) 
 {
     Lexer lexer("examples/template.qc");
+
     std::vector<Token> resultTokens = lexer.applyLexer(); 
+
     for (const Token& token : resultTokens)
     {
         std::cout << "Token: " << tokenToString(token) << std::endl;
