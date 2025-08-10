@@ -110,12 +110,12 @@ void Lexer::moveCursor(unsigned long toPos)
 unsigned long Lexer::findSpace(unsigned long index)
 {
     int spaceIndex = index;
-    while(spaceIndex < m_fileContent.size() && !(std::isspace(m_fileContent[spaceIndex])))
+    while(spaceIndex < (int)m_fileContent.size() && !(std::isspace(m_fileContent[spaceIndex])))
     {
         spaceIndex++;
     }
 
-    if(spaceIndex == m_fileContent.size())
+    if(spaceIndex == (int)m_fileContent.size())
     {
         return -1;
     }
@@ -599,10 +599,25 @@ std::vector<Token> Lexer::applyLexer()
             );
         }
 
+        if (tokens.size() > 0 && tokens[tokens.size() - 1].type == TokenType::EndOfFile)
+        {
+            return tokens;
+        }
+
         tokens.push_back(token);
 
         if (m_curIndex == m_fileContent.size())
         {
+            tokens.push_back(
+                {
+                    TokenType::EndOfFile, 
+                    "", 
+                    {
+                        .line=m_lastPos.line, 
+                        .column=m_lastPos.column
+                    }
+                }
+            );
             return tokens;
         }
 

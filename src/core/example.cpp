@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "preprocessor.h"
 
 #include <iostream>
 #include <string>
@@ -37,6 +38,13 @@ std::string tokenTypeToString(TokenType type) {
         {TokenType::KeywordUnsigned, "KeywordUnsigned"},
         {TokenType::KeywordSigned, "KeywordSigned"},
         {TokenType::KeywordExtern, "KeywordExtern"},
+        {TokenType::KeywordAlign, "KeywordAlign"},
+        {TokenType::KeywordPacked, "KeywordPacked"},
+        {TokenType::KeywordFallthrough, "KeywordFallthrough"},
+        {TokenType::KeywordZero, "KeywordZero"},
+        {TokenType::KeywordSizeof, "KeywordSizeof"},
+        {TokenType::KeywordOffsetof, "KeywordOffsetof"},
+        {TokenType::KeywordFuncptr, "KeywordFuncptr"},
 
         // Literals
         {TokenType::LiteralInteger, "LiteralInteger"},
@@ -112,7 +120,9 @@ std::string tokenToString(const Token& token) {
 
 int main(int argc, char* argv[]) 
 {
-    Lexer lexer("examples/template.qc");
+    std::string filename = "examples/features.qc";
+
+    Lexer lexer(processFile(filename));
 
     std::vector<Token> resultTokens = lexer.applyLexer(); 
 

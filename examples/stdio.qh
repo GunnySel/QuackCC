@@ -1,3 +1,5 @@
+int b = 3;
+
 extern void* malloc(unsigned long size);
 extern void free(void* ptr);
 
